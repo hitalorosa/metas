@@ -1,6 +1,6 @@
 import { AppState } from "@/types";
 
-export const CONFIG_VERSION = "1.2.0";
+export const CONFIG_VERSION = "1.3.0";
 
 function dk(daysFromNow: number): string {
   const d = new Date();
@@ -35,76 +35,110 @@ function makeInitialState(): AppState {
     habitLog: {},
 
     missions: [
-      // ── Missões semanais (duram 7 dias) ──────────────────────────────────
+      // ══ PASSE DE BATALHA DA SEMANA (7 dias) ══════════════════════════════
       {
         id: "mw1", type: "main",
-        title: "Treinar 3x esta semana",
-        coinReward: 50, completed: false,
-        startDate: dk(0), endDate: dk(6),
-      },
-      {
-        id: "mw2", type: "main",
-        title: "Trabalhar no negócio 4x esta semana",
+        title: "⚡ Codar/Criar: 4 dias no Negócio",
         coinReward: 60, completed: false,
         startDate: dk(0), endDate: dk(6),
       },
       {
+        id: "mw2", type: "main",
+        title: "🏋️ O Corpo é a Máquina: 4 Treinos",
+        coinReward: 50, completed: false,
+        startDate: dk(0), endDate: dk(6),
+      },
+      {
         id: "mw3", type: "secondary",
-        title: "Completar 3 sessões de inglês esta semana",
+        title: "🎓 Domínio em ADS: 3 Sessões de Estudo",
         coinReward: 35, completed: false,
         startDate: dk(0), endDate: dk(6),
       },
       {
-        id: "mw4", type: "secondary",
-        title: "Revisão financeira da semana (domingo)",
+        id: "mw4", type: "bonus",
+        title: "😴 Combo do Sono: 5 dias dormindo antes das 23h",
         coinReward: 30, completed: false,
         startDate: dk(0), endDate: dk(6),
       },
-      {
-        id: "mw5", type: "bonus",
-        title: "Ler todos os dias desta semana",
-        coinReward: 25, completed: false,
-        startDate: dk(0), endDate: dk(6),
-      },
 
-      // ── Missões de 3 dias ────────────────────────────────────────────────
+      // ══ DIA 1 — Hoje (Foco e Preparação) ═════════════════════════════════
       {
-        id: "m3d1", type: "main",
-        title: "Registrar gastos 3 dias seguidos",
-        coinReward: 30, completed: false,
-        startDate: dk(0), endDate: dk(2),
-      },
-      {
-        id: "m3d2", type: "secondary",
-        title: "Higiene facial 3 dias seguidos",
-        coinReward: 20, completed: false,
-        startDate: dk(0), endDate: dk(2),
-      },
-      {
-        id: "m3d3", type: "bonus",
-        title: "Organizar ambiente 3 dias seguidos",
-        coinReward: 15, completed: false,
-        startDate: dk(0), endDate: dk(2),
-      },
-
-      // ── Missões de hoje (diárias) ────────────────────────────────────────
-      {
-        id: "md1", type: "main",
-        title: "Treino completo de hoje",
+        id: "md1a", type: "main",
+        title: "🚀 Estruturar 1 roteiro ou gerar imagens de IA pro canal",
         coinReward: 25, completed: false,
         startDate: dk(0), endDate: dk(0),
       },
       {
-        id: "md2", type: "secondary",
-        title: "45 min de estudo da faculdade",
+        id: "md1b", type: "secondary",
+        title: "🥗 Alimentação dentro do plano + Treino concluído",
         coinReward: 15, completed: false,
         startDate: dk(0), endDate: dk(0),
       },
       {
-        id: "md3", type: "bonus",
-        title: "10 min de leitura",
+        id: "md1c", type: "bonus",
+        title: "🧹 Organizar mesa/quarto — deixar o setup limpo pra semana",
         coinReward: 10, completed: false,
         startDate: dk(0), endDate: dk(0),
+      },
+
+      // ══ DIA 2 — Amanhã 🎂 ANIVERSÁRIO ════════════════════════════════════
+      {
+        id: "md2a", type: "main",
+        title: "🎉 Aproveitar o dia! Sair, comer bem, jogar sem culpa",
+        coinReward: 25, completed: false,
+        startDate: dk(1), endDate: dk(1),
+      },
+      {
+        id: "md2b", type: "secondary",
+        title: "🧴 Higiene facial completa — estilo pro seu dia especial",
+        coinReward: 15, completed: false,
+        startDate: dk(1), endDate: dk(1),
+      },
+      {
+        id: "md2c", type: "bonus",
+        title: "📚 Leitura leve (10+ min) — algo que você curta",
+        coinReward: 10, completed: false,
+        startDate: dk(1), endDate: dk(1),
+      },
+
+      // ══ DIA 3 — Retorno com Força Total ══════════════════════════════════
+      {
+        id: "md3a", type: "main",
+        title: "💻 Estudo da faculdade: abrir VS Code e praticar ADS",
+        coinReward: 25, completed: false,
+        startDate: dk(2), endDate: dk(2),
+      },
+      {
+        id: "md3b", type: "secondary",
+        title: "⏰ Acordar até 05:30 + Treino — matar o dia logo cedo",
+        coinReward: 15, completed: false,
+        startDate: dk(2), endDate: dk(2),
+      },
+      {
+        id: "md3c", type: "bonus",
+        title: "🇺🇸 Inglês (20 min) — conteúdo de tecnologia em inglês",
+        coinReward: 10, completed: false,
+        startDate: dk(2), endDate: dk(2),
+      },
+
+      // ══ DIA 4 — Foco no Negócio e APIs ═══════════════════════════════════
+      {
+        id: "md4a", type: "main",
+        title: "🤖 Testar novos prompts (Flow/Whisky) ou planejar app de LLMs",
+        coinReward: 25, completed: false,
+        startDate: dk(3), endDate: dk(3),
+      },
+      {
+        id: "md4b", type: "secondary",
+        title: "😴 Dormir antes das 23:00 — não ser zumbi na Nouê amanhã",
+        coinReward: 15, completed: false,
+        startDate: dk(3), endDate: dk(3),
+      },
+      {
+        id: "md4c", type: "bonus",
+        title: "🧴🧹 Higiene facial + Organizar mesa",
+        coinReward: 10, completed: false,
+        startDate: dk(3), endDate: dk(3),
       },
     ],
 
