@@ -19,11 +19,13 @@ export type HabitLog = Record<string, string[]>;
 
 export interface Mission {
   id: string;
-  dateKey: string;
   type: MissionType;
   title: string;
   completed: boolean;
   coinReward: number;
+  startDate: string;      // YYYY-MM-DD — quando aparece
+  endDate: string;        // YYYY-MM-DD — prazo limite
+  completedDate?: string; // YYYY-MM-DD — quando foi concluída
 }
 
 export interface SystemAction {
@@ -66,6 +68,7 @@ export interface StreakData {
 }
 
 export interface AppState {
+  configVersion: string;
   player: Player;
   habits: Habit[];
   habitLog: HabitLog;
@@ -81,7 +84,7 @@ export type Action =
   | { type: "ADD_HABIT"; habit: Habit }
   | { type: "DELETE_HABIT"; habitId: string }
   | { type: "SET_MISSION"; mission: Mission }
-  | { type: "COMPLETE_MISSION"; missionId: string }
+  | { type: "COMPLETE_MISSION"; missionId: string; dateKey: string }
   | { type: "DELETE_MISSION"; missionId: string }
   | { type: "ADD_GOAL"; goal: Goal }
   | { type: "UPDATE_GOAL_PROGRESS"; goalId: string; percent: number }

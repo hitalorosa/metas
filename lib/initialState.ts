@@ -1,6 +1,8 @@
 import { AppState } from "@/types";
 
-function dateKey(daysFromNow: number): string {
+export const CONFIG_VERSION = "1.2.0";
+
+function dk(daysFromNow: number): string {
   const d = new Date();
   d.setDate(d.getDate() + daysFromNow);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -8,14 +10,11 @@ function dateKey(daysFromNow: number): string {
 
 function makeInitialState(): AppState {
   return {
-    player: {
-      name: "Hitalo",
-      totalXP: 0,
-      coins: 0,
-    },
+    configVersion: CONFIG_VERSION,
+
+    player: { name: "Hitalo", totalXP: 0, coins: 0 },
 
     habits: [
-      // Positivos
       { id: "h1",  name: "Acordar até 05:30",                 type: "positive", xpValue: 30, icon: "⏰" },
       { id: "h2",  name: "Treino concluído",                   type: "positive", xpValue: 50, icon: "🏋️" },
       { id: "h3",  name: "Alimentação dentro do plano",        type: "positive", xpValue: 40, icon: "🥗" },
@@ -26,7 +25,6 @@ function makeInitialState(): AppState {
       { id: "h8",  name: "Organizar mesa/quarto (10 min)",     type: "positive", xpValue: 15, icon: "🧹" },
       { id: "h9",  name: "Trabalhar no negócio (30+ min)",     type: "positive", xpValue: 60, icon: "🚀" },
       { id: "h10", name: "Dormir antes das 23:00",             type: "positive", xpValue: 40, icon: "😴" },
-      // Negativos
       { id: "h11", name: "+2h de redes sociais sem propósito", type: "negative", xpValue: 40, icon: "📱" },
       { id: "h12", name: "Pular treino sem motivo",            type: "negative", xpValue: 60, icon: "❌" },
       { id: "h13", name: "Dormir após 00:30",                  type: "negative", xpValue: 35, icon: "🌙" },
@@ -37,44 +35,84 @@ function makeInitialState(): AppState {
     habitLog: {},
 
     missions: [
-      // Dia 1 — hoje
-      { id: "m1a", dateKey: dateKey(0), type: "main",      title: "Treino completo",                        completed: false, coinReward: 25 },
-      { id: "m1b", dateKey: dateKey(0), type: "secondary", title: "45 min de estudo da faculdade",          completed: false, coinReward: 15 },
-      { id: "m1c", dateKey: dateKey(0), type: "bonus",     title: "10 min de leitura",                      completed: false, coinReward: 10 },
-      // Dia 2
-      { id: "m2a", dateKey: dateKey(1), type: "main",      title: "20 min de inglês",                       completed: false, coinReward: 25 },
-      { id: "m2b", dateKey: dateKey(1), type: "secondary", title: "Organizar ambiente de trabalho",         completed: false, coinReward: 15 },
-      { id: "m2c", dateKey: dateKey(1), type: "bonus",     title: "Higiene facial completa",                completed: false, coinReward: 10 },
-      // Dia 3
-      { id: "m3a", dateKey: dateKey(2), type: "main",      title: "Treino completo",                        completed: false, coinReward: 25 },
-      { id: "m3b", dateKey: dateKey(2), type: "secondary", title: "Registrar todas as despesas do dia",     completed: false, coinReward: 15 },
-      { id: "m3c", dateKey: dateKey(2), type: "bonus",     title: "Dormir antes das 23h",                   completed: false, coinReward: 10 },
-      // Dia 4
-      { id: "m4a", dateKey: dateKey(3), type: "main",      title: "45 min de estudo da faculdade",          completed: false, coinReward: 25 },
-      { id: "m4b", dateKey: dateKey(3), type: "secondary", title: "30 min trabalhando na ideia de negócio", completed: false, coinReward: 15 },
-      { id: "m4c", dateKey: dateKey(3), type: "bonus",     title: "10 min de leitura",                      completed: false, coinReward: 10 },
-      // Dia 5
-      { id: "m5a", dateKey: dateKey(4), type: "main",      title: "Treino completo",                        completed: false, coinReward: 25 },
-      { id: "m5b", dateKey: dateKey(4), type: "secondary", title: "20 min de inglês",                       completed: false, coinReward: 15 },
-      { id: "m5c", dateKey: dateKey(4), type: "bonus",     title: "Beber 3L de água",                       completed: false, coinReward: 10 },
-      // Dia 6
-      { id: "m6a", dateKey: dateKey(5), type: "main",      title: "Planejamento financeiro semanal",        completed: false, coinReward: 25 },
-      { id: "m6b", dateKey: dateKey(5), type: "secondary", title: "30 min no negócio próprio",              completed: false, coinReward: 15 },
-      { id: "m6c", dateKey: dateKey(5), type: "bonus",     title: "Organizar quarto/escritório",            completed: false, coinReward: 10 },
-      // Dia 7
-      { id: "m7a", dateKey: dateKey(6), type: "main",      title: "Revisão da semana",                      completed: false, coinReward: 25 },
-      { id: "m7b", dateKey: dateKey(6), type: "secondary", title: "Planejar a próxima semana",              completed: false, coinReward: 15 },
-      { id: "m7c", dateKey: dateKey(6), type: "bonus",     title: "Leitura livre",                          completed: false, coinReward: 10 },
+      // ── Missões semanais (duram 7 dias) ──────────────────────────────────
+      {
+        id: "mw1", type: "main",
+        title: "Treinar 3x esta semana",
+        coinReward: 50, completed: false,
+        startDate: dk(0), endDate: dk(6),
+      },
+      {
+        id: "mw2", type: "main",
+        title: "Trabalhar no negócio 4x esta semana",
+        coinReward: 60, completed: false,
+        startDate: dk(0), endDate: dk(6),
+      },
+      {
+        id: "mw3", type: "secondary",
+        title: "Completar 3 sessões de inglês esta semana",
+        coinReward: 35, completed: false,
+        startDate: dk(0), endDate: dk(6),
+      },
+      {
+        id: "mw4", type: "secondary",
+        title: "Revisão financeira da semana (domingo)",
+        coinReward: 30, completed: false,
+        startDate: dk(0), endDate: dk(6),
+      },
+      {
+        id: "mw5", type: "bonus",
+        title: "Ler todos os dias desta semana",
+        coinReward: 25, completed: false,
+        startDate: dk(0), endDate: dk(6),
+      },
+
+      // ── Missões de 3 dias ────────────────────────────────────────────────
+      {
+        id: "m3d1", type: "main",
+        title: "Registrar gastos 3 dias seguidos",
+        coinReward: 30, completed: false,
+        startDate: dk(0), endDate: dk(2),
+      },
+      {
+        id: "m3d2", type: "secondary",
+        title: "Higiene facial 3 dias seguidos",
+        coinReward: 20, completed: false,
+        startDate: dk(0), endDate: dk(2),
+      },
+      {
+        id: "m3d3", type: "bonus",
+        title: "Organizar ambiente 3 dias seguidos",
+        coinReward: 15, completed: false,
+        startDate: dk(0), endDate: dk(2),
+      },
+
+      // ── Missões de hoje (diárias) ────────────────────────────────────────
+      {
+        id: "md1", type: "main",
+        title: "Treino completo de hoje",
+        coinReward: 25, completed: false,
+        startDate: dk(0), endDate: dk(0),
+      },
+      {
+        id: "md2", type: "secondary",
+        title: "45 min de estudo da faculdade",
+        coinReward: 15, completed: false,
+        startDate: dk(0), endDate: dk(0),
+      },
+      {
+        id: "md3", type: "bonus",
+        title: "10 min de leitura",
+        coinReward: 10, completed: false,
+        startDate: dk(0), endDate: dk(0),
+      },
     ],
 
     goals: [
       {
-        id: "g1",
-        title: "Meter o Shape",
+        id: "g1", title: "Meter o Shape",
         description: "Ganhar disposição, disciplina, autoestima e melhorar saúde.",
-        targetDate: "2026-09-06",
-        progressPercent: 0,
-        archived: false,
+        targetDate: "2026-09-06", progressPercent: 0, archived: false,
         createdAt: new Date().toISOString(),
         system: [
           { id: "s1a", label: "Treino 5x por semana",                    frequency: "weekly" },
@@ -85,12 +123,9 @@ function makeInitialState(): AppState {
         ],
       },
       {
-        id: "g2",
-        title: "Juntar R$ 5.000",
+        id: "g2", title: "Juntar R$ 5.000",
         description: "Criar reserva para oportunidades e futuro negócio.",
-        targetDate: "2026-12-08",
-        progressPercent: 0,
-        archived: false,
+        targetDate: "2026-12-08", progressPercent: 0, archived: false,
         createdAt: new Date().toISOString(),
         system: [
           { id: "s2a", label: "Registrar gastos diariamente",    frequency: "daily" },
@@ -101,28 +136,22 @@ function makeInitialState(): AppState {
         ],
       },
       {
-        id: "g3",
-        title: "Aprender Inglês",
+        id: "g3", title: "Aprender Inglês",
         description: "Melhorar oportunidades profissionais e empreendedoras.",
-        targetDate: "2026-12-08",
-        progressPercent: 0,
-        archived: false,
+        targetDate: "2026-12-08", progressPercent: 0, archived: false,
         createdAt: new Date().toISOString(),
         system: [
-          { id: "s3a", label: "20 minutos diários de estudo",                frequency: "daily" },
-          { id: "s3b", label: "10 palavras novas por dia",                   frequency: "daily" },
-          { id: "s3c", label: "Assistir conteúdo em inglês 3x por semana",   frequency: "weekly" },
-          { id: "s3d", label: "Revisão semanal de vocabulário",              frequency: "weekly" },
-          { id: "s3e", label: "Conversação ou shadowing 2x por semana",      frequency: "weekly" },
+          { id: "s3a", label: "20 minutos diários de estudo",             frequency: "daily" },
+          { id: "s3b", label: "10 palavras novas por dia",                frequency: "daily" },
+          { id: "s3c", label: "Assistir conteúdo em inglês 3x por semana",frequency: "weekly" },
+          { id: "s3d", label: "Revisão semanal de vocabulário",           frequency: "weekly" },
+          { id: "s3e", label: "Conversação ou shadowing 2x por semana",   frequency: "weekly" },
         ],
       },
       {
-        id: "g4",
-        title: "Construir um Negócio",
+        id: "g4", title: "Construir um Negócio",
         description: "Criar uma fonte de renda própria e independência financeira.",
-        targetDate: "2026-12-08",
-        progressPercent: 0,
-        archived: false,
+        targetDate: "2026-12-08", progressPercent: 0, archived: false,
         createdAt: new Date().toISOString(),
         system: [
           { id: "s4a", label: "30 minutos por dia dedicados ao negócio", frequency: "daily" },
@@ -133,12 +162,9 @@ function makeInitialState(): AppState {
         ],
       },
       {
-        id: "g5",
-        title: "Evoluir na Faculdade (ADS)",
+        id: "g5", title: "Evoluir na Faculdade (ADS)",
         description: "Formação sólida em ADS e aumento de valor profissional.",
-        targetDate: "2026-12-08",
-        progressPercent: 0,
-        archived: false,
+        targetDate: "2026-12-08", progressPercent: 0, archived: false,
         createdAt: new Date().toISOString(),
         system: [
           { id: "s5a", label: "Estudo 5x por semana (mín. 45 min)",  frequency: "weekly" },
@@ -153,22 +179,20 @@ function makeInitialState(): AppState {
     xpHistory: [],
 
     rewards: [
-      { id: "r1", title: "Café especial",        description: "Comprar algo que goste",                                  coinCost: 30,  maxPurchases: 20, purchaseCount: 0, icon: "☕" },
-      { id: "r2", title: "Hambúrguer sem culpa", description: "Refeição livre planejada",                                coinCost: 50,  maxPurchases: 10, purchaseCount: 0, icon: "🍔" },
-      { id: "r3", title: "Sessão gamer",         description: "2 horas livres para jogar",                              coinCost: 60,  maxPurchases: 15, purchaseCount: 0, icon: "🎮" },
-      { id: "r4", title: "Cinema com namorada",  description: "Programa especial",                                      coinCost: 80,  maxPurchases: 10, purchaseCount: 0, icon: "🎬" },
-      { id: "r5", title: "Comprar um livro",     description: "Desenvolvimento pessoal",                                coinCost: 90,  maxPurchases: 10, purchaseCount: 0, icon: "📚" },
-      { id: "r6", title: "Comprar uma roupa",    description: "Quando atingir marcos de shape",                         coinCost: 120, maxPurchases: 5,  purchaseCount: 0, icon: "👕" },
-      { id: "r7", title: "Day off parcial",      description: "Meio período sem obrigações",                            coinCost: 130, maxPurchases: 5,  purchaseCount: 0, icon: "🌴" },
-      { id: "r8", title: "Experiência premium",  description: "Restaurante, passeio ou algo especial",                  coinCost: 150, maxPurchases: 5,  purchaseCount: 0, icon: "🏆" },
-      { id: "r9", title: "Jogo novo na Steam",   description: "Direito de comprar aquele jogo em promoção",             coinCost: 250, maxPurchases: 5,  purchaseCount: 0, icon: "💳" },
+      { id: "r1", title: "Café especial",        description: "Comprar algo que goste",                        coinCost: 30,  maxPurchases: 20, purchaseCount: 0, icon: "☕" },
+      { id: "r2", title: "Hambúrguer sem culpa", description: "Refeição livre planejada",                      coinCost: 50,  maxPurchases: 10, purchaseCount: 0, icon: "🍔" },
+      { id: "r3", title: "Sessão gamer",         description: "2 horas livres para jogar",                    coinCost: 60,  maxPurchases: 15, purchaseCount: 0, icon: "🎮" },
+      { id: "r4", title: "Cinema com namorada",  description: "Programa especial",                            coinCost: 80,  maxPurchases: 10, purchaseCount: 0, icon: "🎬" },
+      { id: "r5", title: "Comprar um livro",     description: "Desenvolvimento pessoal",                      coinCost: 90,  maxPurchases: 10, purchaseCount: 0, icon: "📚" },
+      { id: "r6", title: "Comprar uma roupa",    description: "Quando atingir marcos de shape",               coinCost: 120, maxPurchases: 5,  purchaseCount: 0, icon: "👕" },
+      { id: "r7", title: "Day off parcial",      description: "Meio período sem obrigações",                  coinCost: 130, maxPurchases: 5,  purchaseCount: 0, icon: "🌴" },
+      { id: "r8", title: "Experiência premium",  description: "Restaurante, passeio ou algo especial",        coinCost: 150, maxPurchases: 5,  purchaseCount: 0, icon: "🏆" },
+      { id: "r9", title: "Jogo novo na Steam",   description: "Direito de comprar aquele jogo em promoção",   coinCost: 250, maxPurchases: 5,  purchaseCount: 0, icon: "💳" },
     ],
 
     streak: {
-      currentStreak: 0,
-      longestStreak: 0,
-      lastCompletedDateKey: null,
-      lootBoxPending: false,
+      currentStreak: 0, longestStreak: 0,
+      lastCompletedDateKey: null, lootBoxPending: false,
     },
   };
 }

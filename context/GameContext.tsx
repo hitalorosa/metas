@@ -1,10 +1,9 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useReducer } from "react";
-import { AppState, Action, Habit, Mission } from "@/types";
-import { initialState } from "@/lib/initialState";
+import { AppState, Action } from "@/types";
+import { initialState, CONFIG_VERSION } from "@/lib/initialState";
 import { getTodayKey, getYesterdayKey, daysBetween } from "@/lib/dateUtils";
-import { MISSION_COINS } from "@/lib/constants";
 
 const STORAGE_KEY = "rpg-metas-state-v1";
 
@@ -17,16 +16,12 @@ function allPositiveHabitsDone(state: AppState, dateKey: string): boolean {
 
 function updateStreak(state: AppState, dateKey: string): AppState["streak"] {
   const streak = { ...state.streak };
-  const allDone = allPositiveHabitsDone({ ...state }, dateKey);
-
-  if (!allDone) return streak;
+  if (!allPositiveHabitsDone({ ...state }, dateKey)) return streak;
 
   const yesterday = getYesterdayKey();
   const last = streak.lastCompletedDateKey;
 
-  if (last === dateKey) {
-    return streak;
-  }
+  if (last === dateKey) return streak;
 
   if (last === null || last === yesterday) {
     streak.currentStreak = streak.currentStreak + 1;
@@ -66,9 +61,8 @@ function reducer(state: AppState, action: Action): AppState {
 
       const newTotalXP = Math.max(0, state.player.totalXP + xpDelta);
 
-      const newHistoryEntry = { dateKey, xp: newTotalXP };
-      const filteredHistory = state.xpHistory.filter((e) => e.dateKey !== dateKey);
-      const newHistory = [...filteredHistory, newHistoryEntry]
+      const newEntry = { dateKey, xp: newTotalXP };
+      const newHistory = [...state.xpHistory.filter((e) => e.dateKey !== dateKey), newEntry]
         .sort((a, b) => a.dateKey.localeCompare(b.dateKey))
         .slice(-21);
 
@@ -79,9 +73,7 @@ function reducer(state: AppState, action: Action): AppState {
         xpHistory: newHistory,
       };
 
-      const newStreak = updateStreak(stateWithLog, dateKey);
-
-      return { ...stateWithLog, streak: newStreak };
+      return { ...stateWithLog, streak: updateStreak(stateWithLog, dateKey) };
     }
 
     case "ADD_HABIT":
@@ -99,7 +91,9 @@ function reducer(state: AppState, action: Action): AppState {
       return {
         ...state,
         missions: state.missions.map((m) =>
-          m.id === action.missionId ? { ...m, completed: true } : m
+          m.id === action.missionId
+            ? { ...m, completed: true, completedDate: action.dateKey }
+            : m
         ),
         player: { ...state.player, coins: state.player.coins + mission.coinReward },
       };
@@ -151,12 +145,14 @@ function reducer(state: AppState, action: Action): AppState {
 
     case "CLAIM_LOOT_BOX": {
       const reward = state.rewards.find((r) => r.id === action.rewardId);
-      if (!reward) return { ...state, streak: { ...state.streak, lootBoxPending: false } };
+      const updatedRewards = reward
+        ? state.rewards.map((r) =>
+            r.id === action.rewardId ? { ...r, purchaseCount: r.purchaseCount + 1 } : r
+          )
+        : state.rewards;
       return {
         ...state,
-        rewards: state.rewards.map((r) =>
-          r.id === action.rewardId ? { ...r, purchaseCount: r.purchaseCount + 1 } : r
-        ),
+        rewards: updatedRewards,
         streak: { ...state.streak, lootBoxPending: false },
       };
     }
@@ -169,6 +165,31 @@ function reducer(state: AppState, action: Action): AppState {
   }
 }
 
+function loadState(): AppState {
+  if (typeof window === "undefined") return initialState;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return initialState;
+
+    const saved = JSON.parse(raw) as Partial<AppState>;
+
+    // Versão diferente: preserva progresso do jogador, reseta configuração
+    if (saved.configVersion !== CONFIG_VERSION) {
+      return {
+        ...initialState,
+        player: saved.player ?? initialState.player,
+        habitLog: saved.habitLog ?? {},
+        xpHistory: saved.xpHistory ?? [],
+        streak: saved.streak ?? initialState.streak,
+      };
+    }
+
+    return { ...initialState, ...saved };
+  } catch {
+    return initialState;
+  }
+}
+
 interface GameContextValue {
   state: AppState;
   dispatch: React.Dispatch<Action>;
@@ -178,16 +199,7 @@ interface GameContextValue {
 const GameContext = createContext<GameContextValue | null>(null);
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, initialState, (init) => {
-    if (typeof window === "undefined") return init;
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return { ...init, ...JSON.parse(saved) };
-    } catch {
-      // ignore
-    }
-    return init;
-  });
+  const [state, dispatch] = useReducer(reducer, undefined, loadState);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
