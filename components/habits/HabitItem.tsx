@@ -2,45 +2,127 @@
 
 import { useGame } from "@/context/GameContext";
 import { Habit } from "@/types";
-import { Trash2 } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
+import { glowShadow } from "@/lib/mpaStyles";
 
 interface HabitItemProps {
   habit: Habit;
   done: boolean;
 }
 
+// Map common emoji to icon names for the 42px icon box
+const EMOJI_TO_ICON: Record<string, string> = {
+  "⏰": "clock",
+  "🏋️": "dumbbell",
+  "🥗": "activity",
+  "🎓": "book",
+  "🇺🇸": "wind",
+  "📚": "book",
+  "🧴": "droplet",
+  "🧹": "sparkles",
+  "🚀": "zap",
+  "😴": "moon",
+  "📱": "smartphone",
+  "❌": "x",
+  "🌙": "moon",
+  "💸": "coins",
+  "📉": "trending",
+};
+
 export function HabitItem({ habit, done }: HabitItemProps) {
   const { dispatch, todayKey } = useGame();
+  const positive = habit.type === "positive";
+  const xpColor = positive ? "var(--green)" : "var(--red)";
+  const sign = positive ? "+" : "−";
+
+  // Determine icon: if it maps to an SVG icon name, use Icon; else show emoji
+  const iconName = EMOJI_TO_ICON[habit.icon];
 
   return (
     <div
-      className={`flex items-center gap-3 rounded-xl px-4 py-3 border transition-all cursor-pointer group ${
-        done
-          ? "border-violet-500/40 bg-violet-500/10"
-          : "border-white/10 bg-white/5 hover:bg-white/8"
-      }`}
       onClick={() => dispatch({ type: "TOGGLE_HABIT", habitId: habit.id, dateKey: todayKey })}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 13,
+        padding: "13px 14px",
+        cursor: "pointer",
+        borderRadius: 16,
+        border: `1px solid ${done ? "color-mix(in oklab, var(--accent) 55%, transparent)" : "var(--line)"}`,
+        background: done
+          ? "color-mix(in oklab, var(--accent) 12%, var(--surface))"
+          : "var(--surface)",
+        boxShadow: done ? glowShadow(0.22, 26) : "0 1px 0 rgba(255,255,255,0.03) inset",
+        transition: "all 0.22s",
+      }}
     >
-      <span className="text-xl select-none">{habit.icon}</span>
-      <span className={`flex-1 text-sm font-medium ${done ? "line-through text-muted-foreground" : ""}`}>
-        {habit.name}
-      </span>
-      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-        habit.type === "positive"
-          ? "text-green-400 bg-green-400/15"
-          : "text-red-400 bg-red-400/15"
-      }`}>
-        {habit.type === "positive" ? "+" : "-"}{habit.xpValue} XP
-      </span>
-      <button
-        className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-400 transition-opacity"
-        onClick={(e) => {
-          e.stopPropagation();
-          dispatch({ type: "DELETE_HABIT", habitId: habit.id });
+      {/* Icon box 42×42 */}
+      <div
+        style={{
+          width: 42,
+          height: 42,
+          borderRadius: 12,
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: done
+            ? "linear-gradient(180deg, var(--accent-glow), var(--accent))"
+            : "var(--surface-2)",
+          color: done ? "#fff" : xpColor,
+          border: done ? "none" : "1px solid var(--line)",
+          boxShadow: done ? glowShadow(0.5, 14) : "none",
+          transition: "all 0.25s",
         }}
       >
-        <Trash2 size={14} />
-      </button>
+        {done ? (
+          <Icon name="check" size={20} strokeWidth={2.3} />
+        ) : iconName ? (
+          <Icon name={iconName} size={20} strokeWidth={2.3} />
+        ) : (
+          <span style={{ fontSize: 20, lineHeight: 1 }}>{habit.icon}</span>
+        )}
+      </div>
+
+      {/* Text */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontWeight: 600,
+            fontSize: 14.5,
+            color: done ? "var(--text-mute)" : "var(--text)",
+            textDecoration: done ? "line-through" : "none",
+            transition: "color 0.2s",
+          }}
+        >
+          {habit.name}
+        </div>
+        <div style={{ fontSize: 11.5, color: "var(--text-mute)", marginTop: 2 }}>
+          {positive ? "Hábito positivo" : "Evitar hoje"}
+        </div>
+      </div>
+
+      {/* XP badge */}
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 3,
+          padding: "5px 10px",
+          borderRadius: 999,
+          fontFamily: "var(--font-display)",
+          fontWeight: 700,
+          fontSize: 12.5,
+          whiteSpace: "nowrap",
+          color: done ? xpColor : "var(--text-dim)",
+          background: done
+            ? `color-mix(in oklab, ${xpColor} 18%, transparent)`
+            : "rgba(255,255,255,0.05)",
+          transition: "all 0.2s",
+        }}
+      >
+        {sign}{habit.xpValue} XP
+      </span>
     </div>
   );
 }
